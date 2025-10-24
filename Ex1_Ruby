@@ -1,0 +1,76 @@
+
+class Drink
+  # 1) Atributos encapsulados
+  def initialize(nome, preco_base)
+    @nome = nome
+    self.preco_base = preco_base # usa o setter validado
+  end
+
+  # 2) attr_reader :nome + Getter/Setter explícitos para preco_base com validação
+  attr_reader :nome
+
+  def preco_base
+    @preco_base
+  end
+
+  def preco_base=(valor)
+    # aceita string/float/inteiro; valida positivo
+    v = Float(valor) rescue nil
+    raise ArgumentError, "Preço base deve ser numérico e > 0" if v.nil? || v <= 0
+    @preco_base = v
+  end
+
+  # Cálculo base do preço final (padrão: apenas o preço base)
+  def preco_final
+    preco_base
+  end
+
+  # 5) to_s em todas as classes
+  def to_s
+    "#{self.class.name}(#{nome}) — Base: $#{'%.2f' % preco_base} | Final: $#{'%.2f' % preco_final}"
+  end
+end
+
+# (Opcional) classe para drinks comuns — usa lógica base
+class DrinkComum < Drink
+  def to_s
+    "DrinkComum: " + super
+  end
+end
+
+# 3) Subclasse DrinkLenda com anos_desde_criacao
+class DrinkLenda < Drink
+  attr_reader :anos_desde_criacao
+
+  def initialize(nome, preco_base, anos_desde_criacao)
+    super(nome, preco_base)
+    @anos_desde_criacao = Integer(anos_desde_criacao)
+    raise ArgumentError, "Anos desde a criação deve ser >= 0" if @anos_desde_criacao.negative?
+  end
+
+  # 4) Sobrescreve: bônus de $5 por ano
+  def preco_final
+    super + (5 * anos_desde_criacao)
+  end
+
+  def to_s
+    "DrinkLenda: " + super + " | Anos: #{anos_desde_criacao}"
+  end
+end
+
+# 6) Main: coleta entradas e exibe preço final
+if __FILE__ == $0
+  print "Nome do drink: "
+  nome = STDIN.gets&.chomp.to_s
+
+  print "Preço base (ex.: 25.0): "
+  preco_base = STDIN.gets&.chomp
+
+  print "Idade do drink em anos: "
+  anos = STDIN.gets&.chomp
+
+  drink = DrinkLenda.new(nome, preco_base, anos)
+
+  puts "\nPreço final: $#{'%.2f' % drink.preco_final}"
+  puts drink.to_s
+end
